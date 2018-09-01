@@ -37,11 +37,22 @@ class Network(object):
         self.biases = [np.random.randn(y, 1) for y in sizes[1:]]
         self.weights = [np.random.randn(y, x)
                         for x, y in zip(sizes[:-1], sizes[1:])]
+        """
+        Connection of neurons between each layer in a matrices
+        Changes as the size goes
+        """
 
     def feedforward(self, a):
         """Return the output of the network if ``a`` is input."""
         for b, w in zip(self.biases, self.weights):
             a = sigmoid(np.dot(w, a)+b)
+        """
+        Matrix Multiplication
+        -Between each layer
+        -Input* weight for all --> NEXT layer
+        -np.dot = w*a
+        -
+        """
         return a
 
     def SGD(self, training_data, epochs, mini_batch_size, eta,
@@ -132,6 +143,7 @@ class Network(object):
         neuron in the final layer has the highest activation."""
         test_results = [(np.argmax(self.feedforward(x)), y)
                         for (x, y) in test_data]
+        print (len(test_results))
         return sum(int(x == y) for (x, y) in test_results)
 
     def cost_derivative(self, output_activations, y):

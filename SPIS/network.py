@@ -51,7 +51,6 @@ class Network(object):
         -Between each layer
         -Input* weight for all --> NEXT layer
         -np.dot = w*a
-        -
         """
         return a
 
@@ -111,7 +110,7 @@ class Network(object):
         # feedforward
         activation = x
         activations = [x] # list to store all the activations, layer by layer
-        zs = [] # list to store all the z vectors, layer by layer
+        zs = [] # list to store all the z vectors, layer by layer #all the activations
         for b, w in zip(self.biases, self.weights):
             z = np.dot(w, activation)+b
             zs.append(z)
@@ -119,9 +118,10 @@ class Network(object):
             activations.append(activation)
         # backward pass
         delta = self.cost_derivative(activations[-1], y) * \
-            sigmoid_prime(zs[-1])
-        nabla_b[-1] = delta
+            sigmoid_prime(zs[-1]) #\ let's you continue the line
+        nabla_b[-1] = delta #partial derivatives, set it to the biases
         nabla_w[-1] = np.dot(delta, activations[-2].transpose())
+        #partial derivatives, switch (so dimensions would work), set weights
         # Note that the variable l in the loop below is used a little
         # differently to the notation in Chapter 2 of the book.  Here,
         # l = 1 means the last layer of neurons, l = 2 is the
@@ -143,8 +143,12 @@ class Network(object):
         neuron in the final layer has the highest activation."""
         test_results = [(np.argmax(self.feedforward(x)), y)
                         for (x, y) in test_data]
-        print (len(test_results))
+        print (self.feedforward(test_data[0][0]))
+        print (test_results[0])
         return sum(int(x == y) for (x, y) in test_results)
+        #argmax returns the maximum argument
+        #finds the output that results from the data --> one hots it!
+        #selects that number --> works as proper output
 
     def cost_derivative(self, output_activations, y):
         """Return the vector of partial derivatives \partial C_x /
@@ -154,7 +158,7 @@ class Network(object):
 #### Miscellaneous functions
 def sigmoid(z):
     """The sigmoid function."""
-    return 1.0/(1.0+np.exp(-z))
+    return 1.0/(1.0+np.exp(-z)) #logistic growth
 
 def sigmoid_prime(z):
     """Derivative of the sigmoid function."""

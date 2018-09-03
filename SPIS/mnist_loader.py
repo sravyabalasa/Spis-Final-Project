@@ -48,34 +48,20 @@ def load_data():
     f = gzip.open('mnist.pkl.gz', 'rb')
     training_data, validation_data, test_data = pickle.load(f, encoding="latin1")
     f.close()
-    #print (training_data, validation_data, test_data)
     return [training_data, validation_data, test_data]
-    #can only be access variables inside this function
-    '''
-    Adding images of numbers to the numpy array of test images
-    Find the index of those images
-    '''
+
+
 def add_images(imageString):
-    '''
-    Adds images to the function
-    Converts to jpg if necessary
-    '''
+    #Adds images to the function
+    #Converts to jpg if necessary
     image=ui.defImage(imageString)
     (width, height) = image.size
     ui.binarize(image,200,0,0,width,height)
     newImageString= imageString + 'binarize.jpg'
     image.save(newImageString)
     imageToAdd=ui.add_image(newImageString)
-    #append to the test_data array from the load_data function
-    data=load_data()
-    data[2].append(imageToAdd, axis = 0) #works but it is a TUPLE FUHHH....FIX THAT
-add_images('6.jpg')
+    return imageToAdd
 
-def segment_images():
-    '''
-    Creates a series of images from one image
-    '''
-    
 def load_data_wrapper():
     """Return a tuple containing ``(training_data, validation_data,
     test_data)``. Based on ``load_data``, but the format is more
@@ -102,10 +88,15 @@ def load_data_wrapper():
     training_inputs = [np.reshape(x, (784, 1)) for x in tr_d[0]] #creates a 784 array
     training_results = [vectorized_result(y) for y in tr_d[1]] #creates a 10 array
     training_data = zip(training_inputs, training_results) #unzips the training
+
     validation_inputs = [np.reshape(x, (784, 1)) for x in va_d[0]] #creates a 784 array
     validation_data = zip(validation_inputs, va_d[1]) #creates a 10 array
+
     test_inputs = [np.reshape(x, (784, 1)) for x in te_d[0]] #creates a 784 array for tests
+    #ans=add_images('6.jpg') #currently 2346, need to reshape to 784
+    #newIm=[np.reshape(ans, (784,1))]
     test_data = zip(test_inputs, te_d[1]) #unzips the testing
+    print (test_data)
     return [training_data, validation_data, test_data]
 
 def vectorized_result(j):

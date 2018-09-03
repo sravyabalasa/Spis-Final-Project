@@ -9,6 +9,7 @@ net = network.Network([784, 10,10])
 net.SGD(training_data, 30,10,3.0, test_data = test_data)
 '''
 
+
 #Sets up a network with a more specific cost function
 import network2
 net = network2.Network([784, 30, 10], cost=network2.CrossEntropyCost)

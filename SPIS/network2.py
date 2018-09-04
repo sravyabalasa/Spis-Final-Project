@@ -1,13 +1,28 @@
-"""network2.py
+#Created own comments for understanding the implementation
+#Modified evaluate function to implement user input facility
+
+"""
+network2.py
 ~~~~~~~~~~~~~~
 
-An improved version of network.py, implementing the stochastic
-gradient descent learning algorithm for a feedforward neural network.
-Improvements include the addition of the cross-entropy cost function,
-regularization, and better initialization of network weights.  Note
-that I have focused on making the code simple, easily readable, and
-easily modifiable.  It is not optimized, and omits many desirable
-features.
+- An improved version of network.py
+- Implements the stochastic gradient descent learning algorithm for a feedforward neural network.
+- Improvements/Additions
+    - Classes: Cross-entropy cost function versus ONLY Quadratic cost function
+    - Regularization
+    - Better initialization of network weights
+
+FUNCTIONS USED:
+__init__: Initializes the network object
+feedforward: Applies sigmoid function
+SGD: 
+update_mini_batch: Updates weights and biases for a mini-batch between layers
+backprop: Returns gradient for the cost function with previous weights and biases
+accuracy (previously evaluate): Returns number of test inputs that has the correct result outputted
+cost_derivative: Returns difference/vector of partial derivative of cost function
+                 -Between output activations (experimental) and y (predicted)
+vectorized_result: Returns a 10-dimensional unit vector with a 1.0 in the j'th (desired) position and zeroes elsewhere.
+sigmoid: Returns sigmoid for all activations of a certain neuron
 
 """
 
@@ -19,7 +34,6 @@ import sys
 
 # Third-party libraries
 import numpy as np
-
 
 #### Define the quadratic and cross-entropy cost functions
 
@@ -68,15 +82,12 @@ class CrossEntropyCost(object):
 class Network(object):
 
     def __init__(self, sizes, cost=CrossEntropyCost):
-        """The list ``sizes`` contains the number of neurons in the respective
-        layers of the network.  For example, if the list was [2, 3, 1]
-        then it would be a three-layer network, with the first layer
-        containing 2 neurons, the second layer 3 neurons, and the
-        third layer 1 neuron.  The biases and weights for the network
-        are initialized randomly, using
-        ``self.default_weight_initializer`` (see docstring for that
-        method).
-
+        """
+        - Creates a network object
+            - Parameter:"sizes" is a list
+                    Contains the number of layers + number of neurons per layer
+        - Weights and Biases: ``self.default_weight_initializer``
+            - (see docstring for that method).
         """
         self.num_layers = len(sizes)
         self.sizes = sizes
@@ -84,44 +95,45 @@ class Network(object):
         self.cost=cost
 
     def default_weight_initializer(self):
-        """Initialize each weight using a Gaussian distribution with mean 0
-        and standard deviation 1 over the square root of the number of
-        weights connecting to the same neuron.  Initialize the biases
-        using a Gaussian distribution with mean 0 and standard
-        deviation 1.
-
-        Note that the first layer is assumed to be an input layer, and
-        by convention we won't set any biases for those neurons, since
-        biases are only ever used in computing the outputs from later
-        layers.
-
+        """
+        - Weights and biases
+            - Using random module, generates random weights and biases
+            - Gaussian distribution: mean 0, standard deviation/variance 1
+            - Input layer has no biases, output layers have biases for computation
         """
         self.biases = [np.random.randn(y, 1) for y in self.sizes[1:]]
         self.weights = [np.random.randn(y, x)/np.sqrt(x)
                         for x, y in zip(self.sizes[:-1], self.sizes[1:])]
 
     def large_weight_initializer(self):
-        """Initialize the weights using a Gaussian distribution with mean 0
-        and standard deviation 1.  Initialize the biases using a
-        Gaussian distribution with mean 0 and standard deviation 1.
-
-        Note that the first layer is assumed to be an input layer, and
-        by convention we won't set any biases for those neurons, since
-        biases are only ever used in computing the outputs from later
-        layers.
+        """
+        - Weights and biases
+            - Using random module, generates random weights and biases
+            - Gaussian distribution: mean 0, standard deviation/variance 1
+            - Input layer has no biases, output layers have biases for computation
 
         This weight and bias initializer uses the same approach as in
         Chapter 1, and is included for purposes of comparison.  It
         will usually be better to use the default weight initializer
         instead.
-
         """
         self.biases = [np.random.randn(y, 1) for y in self.sizes[1:]]
         self.weights = [np.random.randn(y, x)
                         for x, y in zip(self.sizes[:-1], self.sizes[1:])]
 
     def feedforward(self, a):
-        """Return the output of the network if ``a`` is input."""
+        '''
+        - Parameter: "a" as activation value
+        - Input from one layer directly to next layer, no loop
+        - Applies sigmoid function
+        - Creates new activation value using previous activation, weights, biases
+        - Return: "a" as new activation value
+
+        Matrix Multiplication
+        - Implemented Between each layer
+        - Input*weight + b for ALL a --> Next layer
+        - np.dot = w*a
+        '''
         for b, w in zip(self.biases, self.weights):
             a = sigmoid(np.dot(w, a)+b)
         return a
@@ -215,13 +227,12 @@ class Network(object):
             training_cost, training_accuracy
 
     def update_mini_batch(self, mini_batch, eta, lmbda, n):
-        """Update the network's weights and biases by applying gradient
-        descent using backpropagation to a single mini batch.  The
-        ``mini_batch`` is a list of tuples ``(x, y)``, ``eta`` is the
-        learning rate, ``lmbda`` is the regularization parameter, and
-        ``n`` is the total size of the training data set.
-
-        """
+        '''
+        - Updates weights and biases based on previous layer/backpropogation to one mini batch
+        - Parameters:
+            -mini-batch: tuples of (x,y); x = input; y = desired output
+            -eta: learning rate (n)
+        '''
         nabla_b = [np.zeros(b.shape) for b in self.biases]
         nabla_w = [np.zeros(w.shape) for w in self.weights]
         for x, y in mini_batch:
@@ -234,10 +245,15 @@ class Network(object):
                        for b, nb in zip(self.biases, nabla_b)]
 
     def backprop(self, x, y):
-        """Return a tuple ``(nabla_b, nabla_w)`` representing the
-        gradient for the cost function C_x.  ``nabla_b`` and
-        ``nabla_w`` are layer-by-layer lists of numpy arrays, similar
-        to ``self.biases`` and ``self.weights``."""
+        '''
+        Parameters (x,y)
+            - takes in tuples from each mini-batch
+            - x = input
+            - y = desired output
+        Returns: (nabla_b,nabla_w)
+            - gradient for cost function
+            - numpy arrays of weights and biases BETWEEN layers
+        '''
         nabla_b = [np.zeros(b.shape) for b in self.biases]
         nabla_w = [np.zeros(w.shape) for w in self.weights]
         # feedforward
@@ -267,7 +283,7 @@ class Network(object):
             nabla_w[-l] = np.dot(delta, activations[-l-1].transpose())
         return (nabla_b, nabla_w)
 
-    def accuracy(self, data, convert=False):
+    def accuracy(self, data, convert=False): #like network.py 'evaluate' function
         """Return the number of inputs in ``data`` for which the neural
         network outputs the correct result. The neural network's
         output is assumed to be the index of whichever neuron in the
@@ -288,7 +304,6 @@ class Network(object):
         representations speeds things up.  More details on the
         representations can be found in
         mnist_loader.load_data_wrapper.
-
         """
         if convert:
             results = [(np.argmax(self.feedforward(x)), np.argmax(y))
@@ -296,7 +311,9 @@ class Network(object):
         else:
             results = [(np.argmax(self.feedforward(x)), y)
                         for (x, y) in data]
-
+        print (data[-1])
+        print (results[-1])
+        #This only prints as a result of running the training
         result_accuracy = sum(int(x == y) for (x, y) in results)
         return result_accuracy
 
@@ -316,7 +333,10 @@ class Network(object):
         return cost
 
     def save(self, filename):
-        """Save the neural network to the file ``filename``."""
+        """
+        - Parameter: filename to be saved to, in quotes
+        - Save the neural network to the file ``filename``.
+        """
         data = {"sizes": self.sizes,
                 "weights": [w.tolist() for w in self.weights],
                 "biases": [b.tolist() for b in self.biases],
@@ -327,9 +347,10 @@ class Network(object):
 
 #### Loading a Network
 def load(filename):
-    """Load a neural network from the file ``filename``.  Returns an
-    instance of Network.
-
+    """
+    - Parameter: filename to be saved to, in quotes
+    - Load a trained neural network from the file ``filename``.
+    - Returns an instance of Network.
     """
     f = open(filename, "r")
     data = json.load(f)
@@ -342,17 +363,22 @@ def load(filename):
 
 #### Miscellaneous functions
 def vectorized_result(j):
-    """Return a 10-dimensional unit vector with a 1.0 in the j'th position
-    and zeroes elsewhere.  This is used to convert a digit (0...9)
-    into a corresponding desired output from the neural network.
-
     """
-    e = np.zeros((10, 1))
+    - Parameter: j - location of desired output
+    - Return: e - a 10-dimensional unit vector with a 1.0 in the j'th position and zeroes elsewhere.
+        - This is used to convert a digit (0...9) into a corresponding desired output from the neural network.
+    - WHAT IS USE? 
+    """
+    e = np.zers((10, 1))
     e[j] = 1.0
     return e
 
 def sigmoid(z):
-    """The sigmoid function."""
+    '''
+    - The sigmoid function
+    - Parameters: z is all activations of a certain neuron sigmoid(wx+b) where wx+b is z
+    - Logistic growth: changes slowly because of slow changes of weights and biases
+    '''
     return 1.0/(1.0+np.exp(-z))
 
 def sigmoid_prime(z):

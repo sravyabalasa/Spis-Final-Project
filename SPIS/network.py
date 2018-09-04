@@ -1,15 +1,25 @@
+#Created own comments for understanding the implementation
+
 # %load network.py
 
 """
 network.py
 ~~~~~~~~~~
-IT WORKS
+Implements the stochastic gradient descent (mini batches) algorithm
+Backpropogation function allows for development of gradients through the network
+Difference from network 2: Uses singular cost function - Quadratic cost function
+Side: Network is a class, Network objects must be created
 
-A module to implement the stochastic gradient descent learning
-algorithm for a feedforward neural network.  Gradients are calculated
-using backpropagation.  Note that I have focused on making the code
-simple, easily readable, and easily modifiable.  It is not optimized,
-and omits many desirable features.
+FUNCTIONS USED:
+__init__: Initializes the network object
+feedforward: Applies sigmoid function
+SGD: Main function, applies stochastic gradient descent through multiple functions
+update_mini_batch: Updates weights and biases for a mini-batch between layers
+backprop: Returns gradient for the cost function with previous weights and biases
+evaluate: Returns number of test inputs that has the correct result outputted
+cost_derivative: Returns difference/vector of partial derivative of cost function
+                 -Between output activations (experimental) and y (predicted)
+sigmoid: Returns sigmoid for all activations of a certain neuron
 """
 
 #### Libraries
@@ -22,49 +32,53 @@ import numpy as np
 class Network(object):
 
     def __init__(self, sizes):
-        """The list ``sizes`` contains the number of neurons in the
-        respective layers of the network.  For example, if the list
-        was [2, 3, 1] then it would be a three-layer network, with the
-        first layer containing 2 neurons, the second layer 3 neurons,
-        and the third layer 1 neuron.  The biases and weights for the
-        network are initialized randomly, using a Gaussian
-        distribution with mean 0, and variance 1.  Note that the first
-        layer is assumed to be an input layer, and by convention we
-        won't set any biases for those neurons, since biases are only
-        ever used in computing the outputs from later layers."""
+        '''
+        - Creates a network object
+        - Parameter:"sizes" is a list
+                    Contains the number of layers + number of neurons per layer
+        - Weights and biases
+            - Using random module, generates random weights and biases
+            - Gaussian distribution: mean 0, standard deviation/variance 1
+            - Input layer has no biases, output layers have biases for computation
+        - Details connections of the neurons between each layer (matrix)
+        '''
         self.num_layers = len(sizes)
         self.sizes = sizes
         self.biases = [np.random.randn(y, 1) for y in sizes[1:]]
         self.weights = [np.random.randn(y, x)
                         for x, y in zip(sizes[:-1], sizes[1:])]
-        """
-        Connection of neurons between each layer in a matrices
+
         Changes as the size goes
-        """
+
 
     def feedforward(self, a):
-        """Return the output of the network if ``a`` is input."""
+        '''
+        - Parameter: "a" as activation value
+        - Input from one layer directly to next layer, no loop
+        - Applies sigmoid function
+        - Creates new activation value using previous activation, weights, biases
+        - Return: "a" as new activation value
+
+        Matrix Multiplication
+        - Implemented Between each layer
+        - Input*weight + b for ALL a --> Next layer
+        - np.dot = w*a
+        '''
         for b, w in zip(self.biases, self.weights):
             a = sigmoid(np.dot(w, a)+b)
-        """
-        Matrix Multiplication
-        -Between each layer
-        -Input* weight for all --> NEXT layer
-        -np.dot = w*a
-        """
         return a
 
     def SGD(self, training_data, epochs, mini_batch_size, eta,
             test_data=None):
-        """Train the neural network using mini-batch stochastic
-        gradient descent.  The ``training_data`` is a list of tuples
-        ``(x, y)`` representing the training inputs and the desired
-        outputs.  The other non-optional parameters are
-        self-explanatory.  If ``test_data`` is provided then the
-        network will be evaluated against the test data after each
-        epoch, and partial progress printed out.  This is useful for
-        tracking progress, but slows things down substantially."""
-
+        '''
+        - Trains neural network using mini-batch stochastic gradient descent
+        - Parameters
+            - training_data: list of tuples (x,y); x = input; y = desired output
+            - epochs
+            - mini_batch_size
+            - eta: learning rate (n)
+            - test_data (OPTIONAL): network will be EVALUATED for accuracy after each epoch
+        '''
         training_data = list(training_data)
         n = len(training_data)
 
@@ -85,10 +99,12 @@ class Network(object):
                 print("Epoch {} complete".format(j))
 
     def update_mini_batch(self, mini_batch, eta):
-        """Update the network's weights and biases by applying
-        gradient descent using backpropagation to a single mini batch.
-        The ``mini_batch`` is a list of tuples ``(x, y)``, and ``eta``
-        is the learning rate."""
+        '''
+        - Updates weights and biases based on previous layer/backpropogation to one mini batch
+        - Parameters:
+            -mini-batch: tuples of (x,y); x = input; y = desired output
+            -eta: learning rate (n)
+        '''
         nabla_b = [np.zeros(b.shape) for b in self.biases]
         nabla_w = [np.zeros(w.shape) for w in self.weights]
         for x, y in mini_batch:
@@ -101,16 +117,21 @@ class Network(object):
                        for b, nb in zip(self.biases, nabla_b)]
 
     def backprop(self, x, y):
-        """Return a tuple ``(nabla_b, nabla_w)`` representing the
-        gradient for the cost function C_x.  ``nabla_b`` and
-        ``nabla_w`` are layer-by-layer lists of numpy arrays, similar
-        to ``self.biases`` and ``self.weights``."""
+        '''
+        - Parameters (x,y)
+            - takes in tuples from each mini-batch
+            - x = input
+            - y = desired output
+        - Returns: (nabla_b,nabla_w)
+            - gradient for cost function
+            - numpy arrays of weights and biases BETWEEN layers
+        '''
         nabla_b = [np.zeros(b.shape) for b in self.biases]
         nabla_w = [np.zeros(w.shape) for w in self.weights]
         # feedforward
         activation = x
         activations = [x] # list to store all the activations, layer by layer
-        zs = [] # list to store all the z vectors, layer by layer #all the activations
+        zs = [] # list to store all the z vectors, layer by layer #z is all the activations
         for b, w in zip(self.biases, self.weights):
             z = np.dot(w, activation)+b
             zs.append(z)
@@ -136,28 +157,38 @@ class Network(object):
             nabla_w[-l] = np.dot(delta, activations[-l-1].transpose())
         return (nabla_b, nabla_w)
 
-    def evaluate(self, test_data):
-        """Return the number of test inputs for which the neural
-        network outputs the correct result. Note that the neural
-        network's output is assumed to be the index of whichever
-        neuron in the final layer has the highest activation."""
+    def evaluate(self, test_data): #MODIFIED
+        '''
+        - Parameter: test_data (dataset)
+        - Return: number of test inputs that has the correct result outputted
+            - Index of neuron that has highest activation in the final layer 
+        '''
         test_results = [(np.argmax(self.feedforward(x)), y)
                         for (x, y) in test_data]
-        print (self.feedforward(test_data[0][0]))
-        print (test_results[0])
+        print (self.feedforward(test_data[0][0])) #the numpy array itself
+        print (test_results[0]) #the result that was outputted
         return sum(int(x == y) for (x, y) in test_results)
         #argmax returns the maximum argument
         #finds the output that results from the data --> one hots it!
         #selects that number --> works as proper output
 
     def cost_derivative(self, output_activations, y):
-        """Return the vector of partial derivatives \partial C_x /
-        \partial a for the output activations."""
+        '''
+        - Parameters;
+            - output_activations: neuron that highest activation in final layer
+            - y: desired output
+        - Return: Vector of partial derivatives (partial C_x) for the output activations
+            - Basically a difference
+        '''
         return (output_activations-y)
 
 #### Miscellaneous functions
 def sigmoid(z):
-    """The sigmoid function."""
+    '''
+    - The sigmoid function
+    - Parameters: z is all activations of a certain neuron sigmoid(wx+b) where wx+b is z
+    - Logistic growth: changes slowly because of slow changes of weights and biases
+    '''
     return 1.0/(1.0+np.exp(-z)) #logistic growth
 
 def sigmoid_prime(z):

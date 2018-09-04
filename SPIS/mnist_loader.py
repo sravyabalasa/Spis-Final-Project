@@ -1,3 +1,6 @@
+#Did not write bulk of code
+#Used to implement a user input strategy
+
 # %load mnist_loader.py
 """
 mnist_loader
@@ -18,9 +21,6 @@ import numpy as np
 from scipy import misc
 
 #data = pd.read_csv("data/movieReviews.csv")
-
-# User Input
-import userInput as ui
 
 def load_data():
     """Return the MNIST data as a tuple containing the training data,
@@ -45,12 +45,13 @@ def load_data():
     That's done in the wrapper function ``load_data_wrapper()``, see
     below.
     """
-    f = gzip.open('mnist.pkl.gz', 'rb')
+    f = gzip.open('mnist_expanded.pkl.gz', 'rb')
     training_data, validation_data, test_data = pickle.load(f, encoding="latin1")
     f.close()
     return [training_data, validation_data, test_data]
 
-
+'''
+#TRASH
 def add_images(imageString):
     #Adds images to the function
     #Converts to jpg if necessary
@@ -61,6 +62,7 @@ def add_images(imageString):
     image.save(newImageString)
     imageToAdd=ui.add_image(newImageString)
     return imageToAdd
+'''
 
 def load_data_wrapper():
     """Return a tuple containing ``(training_data, validation_data,

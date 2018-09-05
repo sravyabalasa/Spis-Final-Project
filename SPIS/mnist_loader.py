@@ -1,9 +1,8 @@
-#Did not write bulk of code
-#Used to implement a user input strategy
+#Did not write this code
 
 # %load mnist_loader.py
 """
-mnist_loader
+mnist_loader.py
 ~~~~~~~~~~~~
 A library to load the MNIST image data.  For details of the data
 structures that are returned, see the doc strings for ``load_data``
@@ -19,8 +18,6 @@ import gzip
 # Third-party libraries
 import numpy as np
 from scipy import misc
-
-#data = pd.read_csv("data/movieReviews.csv")
 
 def load_data():
     """Return the MNIST data as a tuple containing the training data,
@@ -49,20 +46,6 @@ def load_data():
     training_data, validation_data, test_data = pickle.load(f, encoding="latin1")
     f.close()
     return [training_data, validation_data, test_data]
-
-'''
-#TRASH
-def add_images(imageString):
-    #Adds images to the function
-    #Converts to jpg if necessary
-    image=ui.defImage(imageString)
-    (width, height) = image.size
-    ui.binarize(image,200,0,0,width,height)
-    newImageString= imageString + 'binarize.jpg'
-    image.save(newImageString)
-    imageToAdd=ui.add_image(newImageString)
-    return imageToAdd
-'''
 
 def load_data_wrapper():
     """Return a tuple containing ``(training_data, validation_data,
@@ -95,10 +78,7 @@ def load_data_wrapper():
     validation_data = zip(validation_inputs, va_d[1]) #creates a 10 array
 
     test_inputs = [np.reshape(x, (784, 1)) for x in te_d[0]] #creates a 784 array for tests
-    #ans=add_images('6.jpg') #currently 2346, need to reshape to 784
-    #newIm=[np.reshape(ans, (784,1))]
     test_data = zip(test_inputs, te_d[1]) #unzips the testing
-    print (test_data)
     return [training_data, validation_data, test_data]
 
 def vectorized_result(j):

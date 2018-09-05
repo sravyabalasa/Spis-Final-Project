@@ -4,7 +4,6 @@
 """
 network2.py
 ~~~~~~~~~~~~~~
-
 - An improved version of network.py
 - Implements the stochastic gradient descent learning algorithm for a feedforward neural network.
 - Improvements/Additions
@@ -15,15 +14,15 @@ network2.py
 FUNCTIONS USED:
 __init__: Initializes the network object
 feedforward: Applies sigmoid function
-SGD: 
+SGD: Main function, applies stochastic gradient descent through multiple functions
 update_mini_batch: Updates weights and biases for a mini-batch between layers
 backprop: Returns gradient for the cost function with previous weights and biases
-accuracy (previously evaluate): Returns number of test inputs that has the correct result outputted
+accuracy (previously evaluate): - Returns number of validation/test inputs that has the correct result outputted
+                                - OR returns cost for training data
 cost_derivative: Returns difference/vector of partial derivative of cost function
                  -Between output activations (experimental) and y (predicted)
 vectorized_result: Returns a 10-dimensional unit vector with a 1.0 in the j'th (desired) position and zeroes elsewhere.
 sigmoid: Returns sigmoid for all activations of a certain neuron
-
 """
 
 #### Libraries
@@ -146,24 +145,24 @@ class Network(object):
             monitor_training_cost=False,
             monitor_training_accuracy=False,
             early_stopping_n = 0):
-        """Train the neural network using mini-batch stochastic gradient
-        descent.  The ``training_data`` is a list of tuples ``(x, y)``
-        representing the training inputs and the desired outputs.  The
-        other non-optional parameters are self-explanatory, as is the
-        regularization parameter ``lmbda``.  The method also accepts
-        ``evaluation_data``, usually either the validation or test
-        data.  We can monitor the cost and accuracy on either the
-        evaluation data or the training data, by setting the
-        appropriate flags.  The method returns a tuple containing four
-        lists: the (per-epoch) costs on the evaluation data, the
-        accuracies on the evaluation data, the costs on the training
-        data, and the accuracies on the training data.  All values are
-        evaluated at the end of each training epoch.  So, for example,
-        if we train for 30 epochs, then the first element of the tuple
-        will be a 30-element list containing the cost on the
-        evaluation data at the end of each epoch. Note that the lists
-        are empty if the corresponding flag is not set.
-
+        """
+        - Trains neural network using mini-batch stochastic gradient descent
+        - Parameters
+            - training_data: list of tuples (x,y); x = input; y = desired output
+            - epochs
+            - mini_batch_size
+            - lmbda: regularization parameter
+            - eta: learning rate (n)
+            - evaluation data: test_data/validation_data (OPTIONAL): network will be EVALUATED for accuracy after each epoch
+        - Return
+            - Tuple with four lists
+            - Per-epoch costs on evaluation data
+            - Accuracy on evaluation data
+            - Costs on training data
+            - Accuracies on training data
+            - (Evaluated at end of training epoch)
+            - (If train 30 epochs, first element = 30 element list with cost on evaluation data)
+            - If no evaluation data = EMPTY  LISTS
         """
 
         # early stopping functionality:
@@ -284,26 +283,15 @@ class Network(object):
         return (nabla_b, nabla_w)
 
     def accuracy(self, data, convert=False): #like network.py 'evaluate' function
-        """Return the number of inputs in ``data`` for which the neural
-        network outputs the correct result. The neural network's
-        output is assumed to be the index of whichever neuron in the
-        final layer has the highest activation.
-
-        The flag ``convert`` should be set to False if the data set is
-        validation or test data (the usual case), and to True if the
-        data set is the training data. The need for this flag arises
-        due to differences in the way the results ``y`` are
-        represented in the different data sets.  In particular, it
-        flags whether we need to convert between the different
-        representations.  It may seem strange to use different
-        representations for the different data sets.  Why not use the
-        same representation for all three data sets?  It's done for
-        efficiency reasons -- the program usually evaluates the cost
-        on the training data and the accuracy on other data sets.
-        These are different types of computations, and using different
-        representations speeds things up.  More details on the
-        representations can be found in
-        mnist_loader.load_data_wrapper.
+        """
+        Parameter:
+            - test_data, validation_data - convert:False - accuracy
+            - training_data - convert:True - cost
+            - convert
+                - y is represented differently (accuracy vs cost)
+        Return:
+            - # of inputs in "data" for which neural network has correct result
+            - NN output = index of neuron has highest activation in final layer
         """
         if convert:
             results = [(np.argmax(self.feedforward(x)), np.argmax(y))
@@ -311,18 +299,20 @@ class Network(object):
         else:
             results = [(np.argmax(self.feedforward(x)), y)
                         for (x, y) in data]
-        print (data[-1])
-        print (results[-1])
+        print ("Real Ouptut: " + str(results[-1][0]))
+        print ("Desired Output: " + str(results [-1][1]))
         #This only prints as a result of running the training
         result_accuracy = sum(int(x == y) for (x, y) in results)
         return result_accuracy
 
     def total_cost(self, data, lmbda, convert=False):
-        """Return the total cost for the data set ``data``.  The flag
-        ``convert`` should be set to False if the data set is the
-        training data (the usual case), and to True if the data set is
-        the validation or test data.  See comments on the similar (but
-        reversed) convention for the ``accuracy`` method, above.
+        """
+        Parameter:
+            - data
+            - convert
+            - BOTH parameters mirror accuracy
+        Return
+            - cost: total cost for the data set ``data``   
         """
         cost = 0.0
         for x, y in data:

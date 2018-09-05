@@ -1,43 +1,46 @@
-from PIL import Image, ImageFilter
+'''
+imagePrepare2.py
+~~~~~~~~~~~~~~
 
-def imageprepare(argv):
-    """
-    This function returns the pixel values.
-    The imput is a png file location.
-    """
-    im = Image.open(argv).convert('L')
-    width = float(im.size[0])
-    height = float(im.size[1])
-    newImage = Image.new('L', (28, 28), (255))  # creates white canvas of 28x28 pixels
+- Prepares a non-MNIST image to be used by the neural network classifier
+- Image is used in an expansion of a new pkl.gz file for testing data
+'''
 
-    if width > height:  # check which dimension is bigger
-        # Width is bigger. Width becomes 20 pixels.
-        nheight = int(round((20.0 / width * height), 0))  # resize height according to ratio width
-        if (nheight == 0):  # rare case but minimum is 1 pixel
-            nheight = 1
-            # resize and sharpen
-        img = im.resize((20, nheight), Image.ANTIALIAS).filter(ImageFilter.SHARPEN)
-        wtop = int(round(((28 - nheight) / 2), 0))  # calculate horizontal position
-        newImage.paste(img, (4, wtop))  # paste resized image on white canvas
-    else:
-        # Height is bigger. Heigth becomes 20 pixels.
-        nwidth = int(round((20.0 / height * width), 0))  # resize width according to ratio height
-        if (nwidth == 0):  # rare case but minimum is 1 pixel
-            nwidth = 1
-            # resize and sharpen
-        img = im.resize((nwidth, 20), Image.ANTIALIAS).filter(ImageFilter.SHARPEN)
-        wleft = int(round(((28 - nwidth) / 2), 0))  # caculate vertical pozition
-        newImage.paste(img, (wleft, 4))  # paste resized image on white canvas
+###Libraries
+#Third-party libraries
+import numpy as np
+import cv2
 
-    # newImage.save("sample.png
-
-    tv = list(newImage.getdata())  # get pixel values
-
-    # normalize pixels to 0 and 1. 0 is pure white, 1 is pure black.
-    tva = [(255 - x) * 1.0 / 255.0 for x in tv]
-    print(tva)
-    return tva
-
-x=imageprepare('./image.png')#file path here
-print(len(x))# mnist IMAGES are 28x28=784 pixels
-
+def imagePrepare(number):
+    # create an array where we can store our 4 pictures
+    images = np.zeros((1,784))
+    # and the correct values
+    correct_vals = np.zeros((1,10))
+    # we want to test our images which you saw at the top of this page
+    i = 0
+    for no in [number]:
+        # read the image
+        gray = cv2.imread(str(no)+".png", cv2.IMREAD_GRAYSCALE)
+        # resize the images and invert it (black background)
+        gray = cv2.resize(255-gray, (28, 28))
+        (thresh, gray) = cv2.threshold(gray, 128, 255, cv2.THRESH_BINARY | cv2.THRESH_OTSU)
+        # save the processed images
+        cv2.imwrite(str(no)+".png", gray)
+        """
+        - Change images in set to range 0-1 from 0-255
+        - Want a 1-D vector with 784 pixels
+        NOTE: Does it need to have various ranges between 0-1 or just 0 and 1?
+        """
+        flatten = gray.flatten() / 255.0
+        """
+        - Stores flattened image
+        - Generate correct_vals array (vectorized_result)
+            -WHAT IS USE?
+        """
+        oneColumn = np.reshape(flatten, (784,1)) #Reshapes the array
+        correct_val = np.zeros((10))
+        correct_val[no] = 1
+        correct_vals[i] = correct_val
+        i += 1
+        myTuple = (oneColumn,no) #numpy array to be added to testing data
+    return myTuple

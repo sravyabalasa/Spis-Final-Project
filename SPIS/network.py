@@ -41,15 +41,13 @@ class Network(object):
             - Gaussian distribution: mean 0, standard deviation/variance 1
             - Input layer has no biases, output layers have biases for computation
         - Details connections of the neurons between each layer (matrix)
+        - Changes as the size goes
         '''
         self.num_layers = len(sizes)
         self.sizes = sizes
         self.biases = [np.random.randn(y, 1) for y in sizes[1:]]
         self.weights = [np.random.randn(y, x)
                         for x, y in zip(sizes[:-1], sizes[1:])]
-
-        Changes as the size goes
-
 
     def feedforward(self, a):
         '''

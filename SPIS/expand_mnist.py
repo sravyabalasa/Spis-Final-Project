@@ -1,22 +1,18 @@
-"""expand_mnist.py
-~~~~~~~~~~~~~~~~~~
+#Modified this code
 
-Take the 50,000 MNIST training images, and create an expanded set of
-250,000 images, by displacing each training image up, down, left and
-right, by one pixel.  Save the resulting file to
-../data/mnist_expanded.pkl.gz.
-
-Note that this program is memory intensive, and may not run on small
-systems.
-
-"""
+'''
+expand_mnist.py
+~~~~~~~~~~~~~~~~~
+- Take the 10,000 MNIST training images
+- Creates an expanded set of 50,000 images
+- Displaces each training image up, down, left and right, by one pixel.
+- Saves the resulting file to /mnist_expanded.pkl.gz.
+- Modified code to allow for user input
+- Expands the testing data
+- Prompts user for number used in demo
+'''
 
 from __future__ import print_function
-
-
-'''
-SHIFT AROUND TO MODIFY THE TESTING DATA, ADD NEW STUFF
-'''
 
 
 #### Libraries
@@ -26,14 +22,23 @@ import _pickle as cPickle
 import gzip
 import os.path
 import random
+from PIL import Image
 
 # Third-party libraries
 import numpy as np
 
 # Other functions
-import imagePrepare2 as prepare
+import imagePrepare as prepare
+
+#User Prompt
+var= input("Input a number between 0-9 you would like to test: ")
+image= Image.open(var+".jpg")
+image.show()
+
+#Expansion of testing set
 print("Expanding the MNIST testing set")
 
+#Old set must be deleted every time
 if os.path.exists("mnist_expanded.pkl.gz"):
     print("The expanded testing set already exists.  Exiting.")
 else:
@@ -60,10 +65,7 @@ else:
             else: 
                 new_img[:, index] = np.zeros(28)
             user_input_testing_pairs.append((np.reshape(new_img, 784), y))
-    user_input_testing_pairs.append(prepare.imagePrepare(5))
-    print (user_input_testing_pairs[-1]) #shows the user input is last in the array
-    #print (len(user_input_testing_pairs))
-    #random.shuffle(user_input_testing_pairs)
+    user_input_testing_pairs.append(prepare.imagePrepare(int(var)))
     user_input_testing_pairs = [list(d) for d in zip(*user_input_testing_pairs)]
     print("Saving expanded data. This may take a few minutes.")
     f = gzip.open("mnist_expanded.pkl.gz", "w")

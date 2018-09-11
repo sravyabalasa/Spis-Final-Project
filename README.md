@@ -1,2 +1,2 @@
 # Spis-Final-Project
-# Full project details located under SPIS
+# Self-project code located under SPIS
